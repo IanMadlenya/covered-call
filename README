@@ -51,6 +51,6 @@ AAPL@185.0(0.20)	Call Sale: 19.50 (0.22%)	Stock Sale: 9442.00 (104.24%)	Total: 9
 AAPL@190.0(0.15)	Call Sale: 15.00 (0.17%)	Stock Sale: 9942.00 (109.76%)	Total: 9957.00 (109.92%)
 
 
-The first column is the Ticker, and the strike price.  The second column is the return you would receive selling a call option half way between the bid and the ask.  The third column is return/loss on 100 shres of the equity IF IT IS CALLED AWAY FROM YOU.  The final column is the total return based on the equity amount.
+The first column is the Ticker, and the strike price.  The second column is the return you would receive selling a call option half way between the bid and the ask.  The third column is return/loss on 100 shares of the equity IF IT IS CALLED AWAY FROM YOU.  The final column is the total return based on the equity amount.
 
 MIT License

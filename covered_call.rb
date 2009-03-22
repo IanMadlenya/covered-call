@@ -16,7 +16,7 @@ end
 data = Net::HTTP.get_response(URI.parse(url)).body
 
 #Current price is the first bolded number on the page
-current_price =  data.scan(/<b>([\d\.]{3,})<\/b>/)[0][0]
+current_price =  data.scan(/<b><span.*?>([\d\.]{3,})<\/span><\/b>/)[0][0]
 puts "Current Price: #{current_price}"
 
 ticker = Ticker.new(ticker, current_price)
