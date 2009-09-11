@@ -16,6 +16,8 @@ end
 ensure_in_path 'lib'
 require 'covered-call'
 
+depend_on('optiflag')
+
 task :default => 'spec:run'
 
 PROJ.name = 'covered-call'

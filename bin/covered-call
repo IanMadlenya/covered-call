@@ -3,18 +3,38 @@
 require File.expand_path(
     File.join(File.dirname(__FILE__), %w[.. lib covered-call]))
 require 'net/http'
+require 'rubygems'
+require 'optiflag'
 
-ticker = ARGV[0]
-date = ARGV[1]
+# Set up command line arguments
 
-if ARGV.length < 1 then
-  puts "covered_call.py SYMBOL [DATE]"
-  exit
-end 
+module CoveredCall extend OptiFlagSet
+   flag "t" do
+	description "The underlying equity's ticker" 
+	alternate_forms "ticker"
+   end
+   optional_flag "e" do
+	description "The expiration month [eg: 2010-02] default: next expiration" 
+	value_matches ["Expiration date must be YYYY-MM", /^\d{4}\-\d{2}$/]
+	alternate_forms "expiration"
+   end
+   optional_flag "f" do
+	description "Format (csv,human) default: human"
+	alternate_forms "format"
+	value_in_set ['csv', 'human']
+   end
+   usage_flag "h", "help" 
+   and_process!
+end
+
+format = ARGV.flags[:f]
+format ||= "human"
+ticker = ARGV.flags[:t] 
+expiry = ARGV.flags[:e] 
 
 url = "http://finance.yahoo.com/q/op?s=" + ticker
-if date then
-    url += "&m=" + date
+if not expiry.nil? then
+    url += "&m=" + expiry 
 end
 
 # Get the current yahoo options page
@@ -98,4 +118,15 @@ if(tables.length > 5) then
     end
 end
 
-ticker.possibilities.each do |p| puts p end
+covered_calls = if "human" == format then ticker.chain_human else ticker.chain_csv end
+
+#print the csv header if needed
+if "csv" == format then 
+	puts "Symbol,Strike,Option Price, Option Sale, Option Sale %, Stock Sale Gain, Stock Sale Gain %, Total Gain, Total Gain %"
+end
+
+
+covered_calls.each do |covered_call|
+	puts covered_call
+end 
+

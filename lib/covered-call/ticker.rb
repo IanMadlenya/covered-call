@@ -36,13 +36,25 @@ class Ticker
         total_gain(option) / @price
     end
 
-    def possibilities
+    def chain_human 
         call_options.collect do |option|
-            covered_call_string(option)
+            human_covered_call_string(option)
         end
     end
 
-    def covered_call_string(option)
+    def chain_csv
+        call_options.collect do |option|
+            csv_covered_call_string(option)
+        end
+    end	
+
+    def csv_covered_call_string(option)
+       "#{@symbol},#{option.strike},#{sprintf("%.2f", option.option_price)},#{sprintf("%.2f",option.option_sale)},#{sprintf("%.2f",option_sale_percentage(option))},#{sprintf("%.2f", stock_gain(option))},#{sprintf("%.2f",stock_sale_percentage(option))},#{sprintf("%.2f", total_gain(option))},#{sprintf("%.2f",total_sale_percentage(option))}"
+    end
+
+    def human_covered_call_string(option)
        "#{@symbol}@#{option.strike}(#{sprintf("%.2f", option.option_price)})\tCall Sale: #{sprintf("%.2f",option.option_sale)} (#{sprintf("%.2f",option_sale_percentage(option))}%)\tStock Sale: #{sprintf("%.2f", stock_gain(option))} (#{sprintf("%.2f",stock_sale_percentage(option))}%)\tTotal: #{sprintf("%.2f", total_gain(option))} (#{sprintf("%.2f",total_sale_percentage(option))}%)"
     end
+
+    
 end
