@@ -6,6 +6,7 @@ require 'net/http'
 require 'rubygems'
 require 'optiflag'
 
+include CoveredCallCalcs
 # Set up command line arguments
 
 module CoveredCall extend OptiFlagSet
@@ -31,6 +32,7 @@ format = ARGV.flags[:f]
 format ||= "human"
 ticker = ARGV.flags[:t] 
 expiry = ARGV.flags[:e] 
+expiry ||= "#{Date.today.year}-#{Date.today.month}"
 
 url = "http://finance.yahoo.com/q/op?s=" + ticker
 if not expiry.nil? then
@@ -42,7 +44,6 @@ data = Net::HTTP.get_response(URI.parse(url)).body
 
 #Current price is the first bolded number on the page
 current_price =  data.scan(/<b><span.*?>([\d\.]{3,})<\/span><\/b>/)[0][0]
-puts "Current Price: #{current_price}"
 
 ticker = Ticker.new(ticker, current_price)
 
@@ -118,12 +119,17 @@ if(tables.length > 5) then
     end
 end
 
-covered_calls = if "human" == format then ticker.chain_human else ticker.chain_csv end
+covered_calls = if "human" == format then ticker.chain_human(days_til_expiry(expiry)) else ticker.chain_csv(days_til_expiry(expiry)) end
+
 
 #print the csv header if needed
 if "csv" == format then 
-	puts "Symbol,Strike,Option Price, Option Sale, Option Sale %, Stock Sale Gain, Stock Sale Gain %, Total Gain, Total Gain %"
+	puts "Symbol,Strike,Option Price, Option Sale,Option Sale %, Stock Sale Gain, Stock Sale Gain %, Total Gain, Total Gain %"
+else
+	puts "Current Price: #{current_price}"
+	puts "Days until expiration: #{days_til_expiry(expiry)}"
 end
+
 
 
 covered_calls.each do |covered_call|
