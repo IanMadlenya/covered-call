@@ -1,11 +1,16 @@
 #!/usr/bin/env ruby
 
+require File.expand_path(
+    File.join(File.dirname(__FILE__), %w[.. lib covered-call]))
 require 'net/http'
-require 'option'
-require 'ticker'
 
 ticker = ARGV[0]
 date = ARGV[1]
+
+if ARGV.length < 1 then
+  puts "covered_call.py SYMBOL [DATE]"
+  exit
+end 
 
 url = "http://finance.yahoo.com/q/op?s=" + ticker
 if date then

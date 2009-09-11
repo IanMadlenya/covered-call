@@ -1,0 +1,2 @@
+== 1.0.0 / 2009-09-11
+* Package into bones 
