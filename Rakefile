@@ -28,5 +28,6 @@ PROJ.version = CoveredCall::VERSION
 PROJ.rubyforge.name = 'covered-call'
 
 PROJ.spec.opts << '--color'
+# PROJ.spec.opts << '--quiet'
 
 # EOF
