@@ -51,7 +51,7 @@ tables = data.scan(/\<table.*\<\/table>/)
 
 #Call Options
 if(tables.length > 4) then
-    tables[4].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
+    tables[3].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
         strike = last = bid = ask = volume = nil
         cells = row.scan(/\<td.*?\<\/td\>/)
         if(cells[0] =~ /k=([\d\.]*)/) then
@@ -86,7 +86,7 @@ end
 
 #Puts
 if(tables.length > 5) then
-    tables[5].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
+    tables[4].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
         strike = last = bid = ask = volume = nil
         cells = row.scan(/\<td.*?\<\/td\>/)
         if(cells[0] =~ /k=([\d\.]*)/) then
