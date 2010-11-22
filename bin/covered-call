@@ -33,7 +33,15 @@ format = ARGV.flags[:f]
 format ||= "human"
 ticker = ARGV.flags[:t] 
 expiry = ARGV.flags[:e] 
-expiry ||= "#{Date.today.year}-#{Date.today.month}"
+
+# Determine if we are already past this month's expiration
+if Date.today < third_friday_of("#{Date.today.year}-#{Date.today.month}") then
+   expiry ||= "#{Date.today.year}-#{Date.today.month}"
+elsif Date.today.month == 12 then
+   expiry ||= "#{Date.today.year + 1}-01"
+else
+   expiry ||= "#{Date.today.year}-#{Date.today.month + 1}"
+end
 
 url = "http://finance.yahoo.com/q/op?s=" + ticker
 if not expiry.nil? then
