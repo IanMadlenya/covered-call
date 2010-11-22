@@ -5,6 +5,7 @@ require File.expand_path(
 require 'net/http'
 require 'rubygems'
 require 'optiflag'
+require 'nokogiri'
 
 include CoveredCallCalcs
 # Set up command line arguments
@@ -42,85 +43,35 @@ end
 # Get the current yahoo options page
 data = Net::HTTP.get_response(URI.parse(url)).body
 
+# Read the XML document
+doc = Nokogiri::HTML(data)
+
 #Current price is the first bolded number on the page
-current_price =  data.scan(/<b><span.*?>([\d\.]{3,})<\/span><\/b>/)[0][0]
+current_price = doc.xpath('//b/span')[0].text
 
 ticker = Ticker.new(ticker, current_price)
 
 tables = data.scan(/\<table.*\<\/table>/)
 
-#Call Options
-if(tables.length > 4) then
-    tables[3].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
-        strike = last = bid = ask = volume = nil
-        cells = row.scan(/\<td.*?\<\/td\>/)
-        if(cells[0] =~ /k=([\d\.]*)/) then
-            strike = $1
-        end
-        
-        #Last
-        if(cells[2] =~ />([\d\.]{3,})/) then
-            last = $1
-        end
-
-        #Bid
-        if(cells[4] =~ />([\d\.]{3,})/) then
-            bid = $1
-        end
-        
-        #Ask
-        if(cells[5] =~ />([\d\.]{3,})/) then
-            ask = $1
-        end
-
-        #Volume
-        if(cells[6] =~ />([\d\,]{1,})/) then
-            volume = $1
-        end
-
-        if(strike) then
-            ticker.add_call_option(strike, last, bid, ask, volume)
-        end
-    end
-end
-
-#Puts
-if(tables.length > 5) then
-    tables[4].scan(/\<tr\>.*?\<\/tr\>/).each do |row|
-        strike = last = bid = ask = volume = nil
-        cells = row.scan(/\<td.*?\<\/td\>/)
-        if(cells[0] =~ /k=([\d\.]*)/) then
-            strike = $1
-        end
-        
-        #Last
-        if(cells[2] =~ />([\d\.]{3,})/) then
-            last = $1
-        end
-
-        #Bid
-        if(cells[4] =~ />([\d\.]{3,})/) then
-            bid = $1
-        end
-        
-        #Ask
-        if(cells[5] =~ />([\d\.]{3,})/) then
-            ask = $1
-        end
-
-        #Volume
-        if(cells[6] =~ />([\d\,]{1,})/) then
-            volume = $1
-        end
-
-        if(strike) then
-            ticker.add_put_option(strike, last, bid, ask, volume)
-        end
-    end
-end
-
+doc.xpath('//tr[count(td) = 8]').each do |option_data|
+   strike = option_data.elements[0].text
+   option_label = option_data.elements[1].text
+   last = option_data.elements[2].text
+   bid = option_data.elements[4].text
+   ask = option_data.elements[5].text
+   volume = option_data.elements[6].text
+   # Parse the label to determine if this is a put or a call
+   option_label =~ /.*?\d([CP])\d.*/
+   if $1 == 'C' then
+    ticker.add_call_option(strike, last, bid, ask, volume)
+   elsif $1 == 'P' then
+    ticker.add_put_option(strike, last, bid, ask, volume)
+   else
+    puts "Error consuming option ticker!"
+   end
+end 
+    
 covered_calls = if "human" == format then ticker.chain_human(days_til_expiry(expiry)) else ticker.chain_csv(days_til_expiry(expiry)) end
-
 
 #print the csv header if needed
 if "csv" == format then 
@@ -130,9 +81,6 @@ else
 	puts "Days until expiration: #{days_til_expiry(expiry)}"
 end
 
-
-
 covered_calls.each do |covered_call|
 	puts covered_call
 end 
-
